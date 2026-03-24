@@ -1,14 +1,16 @@
 from fastapi import Depends, APIRouter
-from pydantic import BaseModel
 from typing import Annotated
-from ..dependencies import *
+from ..dependencies import get_valid_case, get_valid_user
+from ..fake_data import case_db, user_db
+from ..data_models import Case, NotesCreate, ActionCreate
 
 
-router = APIRouter()
+# this will add the prefix for each endpoint
+router = APIRouter(prefix="/cases", tags=["cases"])
 
 
 # return a list of cases
-@router.get("/cases", response_model=list[Case], tags=["cases"])
+@router.get("", response_model=list[Case])
 async def get_cases():
     cases =[]
     for i in case_db:
@@ -18,23 +20,23 @@ async def get_cases():
 
 # use case_id instead of case type, since case_id is a path parameter associated with a GET method
 # case_id is now shown in the dependency function
-@router.get("/cases/{case_id}", response_model=Case, tags=["cases"])
+@router.get("/{case_id}", response_model=Case, tags=["cases"])
 async def get_case(case: Annotated[Case, Depends(get_valid_case)]):
     return case
 
 
 # make the notes as a request parameter instead of a query parameter    
-@router.post("/cases/{case_id}/notes", response_model=Case, tags=["cases"])
+@router.post("/{case_id}/notes", response_model=Case, tags=["cases"])
 async def write_notes(payload: NotesCreate, case: Annotated[Case, Depends(get_valid_case)]):
     case_id = case.case_id
     case.notes = payload.notes
     # update DB
     case_db[case_id]["notes"] = case.notes 
-    return case
+    return Case(**case_db[case.case_id])
 
 # this include take action as well as reinstated
 # use patch since it only update partially
-@router.patch("/cases/{case_id}/action", response_model=Case, tags=["cases"])
+@router.patch("/{case_id}/action", response_model=Case, tags=["cases"])
 async def take_action(payload: ActionCreate, case: Annotated[Case, Depends(get_valid_case)]):
     case_id = case.case_id
     user_id = case.user_id
