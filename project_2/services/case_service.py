@@ -13,7 +13,6 @@ def update_case_notes(case:Case, payload: NotesCreate):
 def apply_case_action(case:Case, payload: ActionCreate):
     case_id = case.case_id
     user_id = case.user_id
-    user = get_valid_user(user_id)
     # For simplicity, it takes action regardless of current user disabled state. 
     # Also for simplicity, it doesn't require add notes
     if payload.action: 
