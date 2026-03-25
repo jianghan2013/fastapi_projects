@@ -3,14 +3,14 @@ from ..dependencies import get_valid_user
 from ..fake_data import case_db, user_db
 
 # store all business logics into service.py and make endpoints thin
-def update_case_notes(payload: NotesCreate, case:Case):
+def update_case_notes(case:Case, payload: NotesCreate):
     case_id = case.case_id
     case.notes = payload.notes
     # update DB
     case_db[case_id]["notes"] = case.notes 
     return Case(**case_db[case.case_id])
 
-def apply_case_action(payload: ActionCreate, case:Case):
+def apply_case_action(case:Case, payload: ActionCreate):
     case_id = case.case_id
     user_id = case.user_id
     user = get_valid_user(user_id)
